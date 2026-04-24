@@ -4,7 +4,7 @@ This repository contains the full implementation for **Assignment 4 & 5**. It de
 
 ---
 
-## 🚀 Project Overview
+##  Project Overview
 The goal of this project is to apply **Site Reliability Engineering (SRE)** principles by:
 1. **Provisioning** a high-performance Ubuntu server on AWS EC2.
 2. **Automating** network security through Terraform-defined Security Groups.
@@ -13,7 +13,7 @@ The goal of this project is to apply **Site Reliability Engineering (SRE)** prin
 
 ---
 
-## 🏗 Infrastructure Architecture (Assignment 5)
+##  Infrastructure Architecture (Assignment 5)
 The infrastructure is defined declaratively in `main.tf`.
 
 * **Cloud Provider:** AWS (Region: us-east-1)
@@ -27,7 +27,7 @@ The infrastructure is defined declaratively in `main.tf`.
 
 ---
 
-## 📊 SRE & Monitoring Stack (Assignment 4)
+##  SRE & Monitoring Stack (Assignment 4)
 The deployment consists of four interconnected containers:
 
 | Service | Role | Port |
@@ -39,7 +39,7 @@ The deployment consists of four interconnected containers:
 
 ---
 
-## 🛠 Deployment Instructions
+##  Deployment Instructions
 
 ### 1. Infrastructure Provisioning
 Run these commands from your local machine:
