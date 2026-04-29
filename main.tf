@@ -60,8 +60,8 @@ resource "aws_security_group" "sre_sg" {
 # 2. Create the EC2 Instance
 resource "aws_instance" "sre_server" {
   ami           = "ami-0c7217cdde317cfec" # Ubuntu 22.04 LTS in us-east-1
-  instance_type = "t3.micro"             # Free Tier
-  key_name      = "my-project-key"       # Must match the key you created earlier!
+  instance_type = "t3.micro"             
+  key_name      = "my-project-key"       
 
   vpc_security_group_ids = [aws_security_group.sre_sg.id]
 
