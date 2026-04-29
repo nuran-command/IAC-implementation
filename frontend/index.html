@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SRE Dashboard</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .status { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>SRE Microservices Status</h1>
+    
+    <ul>
+        <li>Auth Service: <span id="auth-status" class="status">Checking...</span></li>
+        <li>User Service: <span id="user-status" class="status">Checking...</span></li>
+        <li>Product Service: <span id="product-status" class="status">Checking...</span></li>
+        <li>Chat Service: <span id="chat-status" class="status">Checking...</span></li>
+        <li>Order Service: <span id="order-status" class="status">Checking...</span></li>
+    </ul>
+
+    <h2>Order Actions</h2>
+    <button onclick="placeOrder()">Place Order</button>
+    <p id="order-msg"></p>
+
+    <script>
+        async function checkStatus() {
+            const services = ['auth', 'user', 'products', 'chat', 'orders'];
+            for (const s of services) {
+                const id = s === 'products' ? 'product' : (s === 'orders' ? 'order' : s);
+                const element = document.getElementById(`${id}-status`);
+                try {
+                    const res = await fetch(`/api/${s}/`);
+                    const data = await res.json();
+                    element.innerText = data.status || 'online';
+                } catch (e) {
+                    element.innerText = 'offline';
+                }
+            }
+        }
+
+        async function placeOrder() {
+            const msg = document.getElementById('order-msg');
+            try {
+                const res = await fetch('/api/orders/');
+                const data = await res.json();
+                if (data.status === 'offline') {
+                    msg.innerText = "Order Failed: " + data.error;
+                } else {
+                    msg.innerText = "Order Placed Successfully!";
+                }
+            } catch (e) {
+                msg.innerText = "Order Failed: Service unreachable";
+            }
+            checkStatus();
+        }
+
+        checkStatus();
+        setInterval(checkStatus, 5000);
+    </script>
+</body>
+</html>

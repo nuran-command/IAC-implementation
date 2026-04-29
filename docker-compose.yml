@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   auth-service:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
     volumes:
@@ -47,3 +56,6 @@ services:
     image: grafana/grafana
     ports:
       - "3001:3000"
+
+volumes:
+  pgdata:
