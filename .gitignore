@@ -16,3 +16,10 @@
 .DS_Store*.pem
 *.tfstate*
 .terraform/
+
+.DS_Store
+
+# Python environment
+venv/
+__pycache__/
+*.pyc
