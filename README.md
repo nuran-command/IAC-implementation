@@ -1,88 +1,57 @@
-# Infrastructure as Code & SRE Observability Stack
+# Infrastructure as Code & SRE Automation Stack
 
-This repository contains the full implementation for **Assignment 4 & 5**. It demonstrates the automated provisioning of cloud infrastructure on **AWS** using **Terraform** and the deployment of a containerized monitoring stack using **Prometheus** and **Grafana**.
-
----
-
-## **Project Overview**
-
-The goal of this project is to apply **Site Reliability Engineering (SRE)** principles:
-
-* **Provisioning:** High-performance Ubuntu server on **AWS EC2**.
-* **Automation:** Network security defined via **Terraform Security Groups**.
-* **Deployment:** Multi-tier microservice architecture using **Docker Compose**.
-* **Observability:** Establishing a monitoring pipeline to track service health and connectivity.
+This repository contains the full implementation for **Assignments 4, 5, and 6**. It demonstrates the evolution from a microservices system with basic monitoring to a highly automated, resilient, and scalable architecture following SRE principles.
 
 ---
 
-## **Infrastructure Architecture (Assignment 5)**
+## **Assignment 6: Automation & Capacity Planning**
 
-The infrastructure is defined declaratively in `main.tf`.
+This phase focuses on reducing operational toil and preparing the system for high load.
 
-* **Cloud Provider:** AWS (Region: `us-east-1`)
-* **Instance Type:** `t3.micro`
-* **Operating System:** `Ubuntu 22.04 LTS`
-* **Security Group Rules:**
-  * **Port 22:** SSH Access for remote management.
-  * **Port 80:** Public Web Access (Order Service / API).
-  * **Port 8080:** Frontend Access (Nginx).
-  * **Port 9090:** Prometheus Metrics UI.
-  * **Port 3000:** Grafana Dashboard.
+### **1. Automation Mechanisms**
+- **Self-Healing Infrastructure**: Every service now includes Docker health checks and `unless-stopped` restart policies.
+- **Monitoring-Based Alerting**: Prometheus is configured with rules to alert on service downtime, high CPU usage, and application-level errors.
+- **Automated Configuration Validation**: A `validate_config.py` script ensures that environment variables are correctly set before deployment, preventing the misconfiguration incident seen in Assignment 4.
+
+### **2. Capacity Planning & Scaling**
+- **Load Simulation**: A `simulate_load.py` script enables stress-testing the system by generating concurrent API requests.
+- **Horizontal Scaling**: The `order-service` is now load-balanced across multiple instances via Nginx `upstream` configuration.
+- **Vertical Scaling**: Terraform infrastructure is parameterized to allow seamless upgrades of instance types (e.g., from `t3.micro` to `t3.small`).
 
 ---
 
-## **SRE & Monitoring Stack (Assignment 4)**
+## **Deployment & Automation Workflow**
 
-The deployment consists of five interconnected containers:
+### **1. Validation**
+Before deploying, validate the environment configuration:
+```bash
+python3 validate_config.py
+```
+
+### **2. Infrastructure Provisioning (Terraform)**
+```bash
+terraform init
+terraform apply -var="instance_type=t3.small" # Example of vertical scaling
+```
+
+### **3. Service Deployment (Docker Compose)**
+```bash
+docker-compose up -d --build
+```
+
+### **4. Load Testing**
+```bash
+python3 simulate_load.py
+```
+
+---
+
+## **SRE Monitoring Stack**
 
 | Service | Role | Port |
 | :--- | :--- | :--- |
-| **Order Service** | FastAPI backend handling business logic. | `80` |
-| **PostgreSQL** | Persistent database for order storage. | `5432` |
-| **Nginx** | Static frontend layer. | `8080` |
-| **Prometheus** | Time-series DB that scrapes service health. | `9090` |
-| **Grafana** | Visualization layer for real-time monitoring. | `3000` |
-
----
-
-## **Incident Response Simulation**
-
-This project simulates a **High-Severity Production Incident**:
-
-* **The Incident:** `order-service` failed with `CRITICAL: Database Connection Failed!`.
-* **Root Cause:** Misconfigured `DB_HOST` environment variable.
-* **The Mitigation:**
-  * Corrected internal DNS resolution in `docker-compose.yml`.
-  * Implemented a `restart: always` policy for service resilience.
-* **Recovery:** Verified status restoration to `{"status": "online"}`.
-
----
-
-## **Deployment Instructions**
-
-### **1. Infrastructure Provisioning**
-
-Run from your local terminal:
-
-```bash
-# Initialize Terraform
-terraform init
-
-# Plan the deployment
-terraform plan
-
-# Apply and provision resources
-terraform apply -auto-approve
-
-## **2. Service Deployment**
-
-```bash
-# Deploy the monitoring stack using Docker Compose
-docker compose up -d
-
-# Navigate to project directory
-cd ~/IAC-implementation
-
-# Deploy the stack
-sudo docker compose up -d
-```
+| **Frontend** | Nginx-based static web interface. | `8080` |
+| **Auth Service** | FastAPI Authentication handler. | `80` |
+| **Order Service** | FastAPI (Load Balanced x2) | `80` |
+| **Prometheus** | Time-series DB with alerting rules. | `9090` |
+| **Grafana** | Real-time observability dashboards. | `3002` |

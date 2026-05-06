@@ -1,6 +1,9 @@
 global:
   scrape_interval: 5s
 
+rule_files:
+  - "alert_rules.yml"
+
 scrape_configs:
   - job_name: 'prometheus'
     static_configs:
@@ -9,7 +12,7 @@ scrape_configs:
   - job_name: 'order-service'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['order-service:80']
+      - targets: ['order-service:80', 'order-service-2:80']
 
   - job_name: 'auth-service'
     metrics_path: '/metrics'

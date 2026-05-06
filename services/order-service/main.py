@@ -11,6 +11,13 @@ def root():
         return {"service": "Order", "status": "offline", "error": "Database connection failed"}
     return {"service": "Order", "status": "online"}
 
+@app.get("/health")
+def health():
+    db_host = os.getenv("DB_HOST", "db")
+    if db_host == "db_wrong":
+        return {"status": "unhealthy", "error": "Database connection failed"}
+    return {"status": "healthy"}
+
 @app.get("/metrics", response_class=PlainTextResponse)
 def metrics():
     db_host = os.getenv("DB_HOST", "db")

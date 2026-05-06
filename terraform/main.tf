@@ -16,34 +16,34 @@ resource "aws_security_group" "sre_sg" {
   name        = "sre-project-sg"
   description = "Allow inbound traffic for SRE project"
 
-  # SSH (22)
+  # SSH
   ingress {
-    from_port   = 22
-    to_port     = 22
+    from_port   = var.ssh_port
+    to_port     = var.ssh_port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # HTTP (80)
+  # HTTP
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = var.http_port
+    to_port     = var.http_port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Grafana (3000)
+  # Grafana
   ingress {
-    from_port   = 3000
-    to_port     = 3000
+    from_port   = var.grafana_port
+    to_port     = var.grafana_port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Prometheus (9090)
+  # Prometheus
   ingress {
-    from_port   = 9090
-    to_port     = 9090
+    from_port   = var.prometheus_port
+    to_port     = var.prometheus_port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -60,8 +60,8 @@ resource "aws_security_group" "sre_sg" {
 # 2. Create the EC2 Instance
 resource "aws_instance" "sre_server" {
   ami           = "ami-0c7217cdde317cfec" # Ubuntu 22.04 LTS in us-east-1
-  instance_type = "t3.micro"             
-  key_name      = "my-project-key"       
+  instance_type = var.instance_type             # Can be upgraded for vertical scaling
+  key_name      = "my-project-key"       # Must match the key you created earlier!
 
   vpc_security_group_ids = [aws_security_group.sre_sg.id]
 

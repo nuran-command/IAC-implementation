@@ -1,0 +1,33 @@
+groups:
+  - name: SRE_Alerts
+    rules:
+      # 1. Service Downtime Alert
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.instance }} is down"
+          description: "Service {{ $labels.instance }} has been down for more than 1 minute."
+
+      # 2. High CPU Usage Alert (Simulated since we don't have node_exporter yet, but we can use container metrics if available)
+      # For now, let's use a generic rule that would work if node_exporter was present
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for more than 2 minutes."
+
+      # 3. Increased Error Rates (Based on status metrics we defined)
+      - alert: ServiceUnhealthy
+        expr: order_service_status == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Order Service is Unhealthy"
+          description: "Order Service is reporting database connection issues."

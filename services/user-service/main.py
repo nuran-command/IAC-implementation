@@ -7,6 +7,10 @@ app = FastAPI()
 def root():
     return {"service": "User", "status": "online"}
 
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
 @app.get("/metrics", response_class=PlainTextResponse)
 def metrics():
     return "# HELP user_service_status Status of user service\n# TYPE user_service_status gauge\nuser_service_status 1\n"

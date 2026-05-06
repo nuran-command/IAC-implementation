@@ -1,41 +1,83 @@
-version: '3.8'
 
 services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - pgdata:/var/lib/postgresql/data
 
   auth-service:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    restart: unless-stopped
     volumes:
       - ./services/auth-service:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   user-service:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    restart: unless-stopped
     volumes:
       - ./services/user-service:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   product-service:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    restart: unless-stopped
     volumes:
       - ./services/product-service:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   chat-service:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    restart: unless-stopped
     volumes:
       - ./services/chat-service:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   order-service:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    restart: unless-stopped
     volumes:
       - ./services/order-service:/app
     environment:
-      - DB_HOST=db
+      - DB_HOST=${DB_HOST:-db}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  order-service-2:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    restart: unless-stopped
+    volumes:
+      - ./services/order-service:/app
+    environment:
+      - DB_HOST=${DB_HOST:-db}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     image: nginx:latest
@@ -43,19 +85,20 @@ services:
       - ./frontend:/usr/share/nginx/html
       - ./nginx.conf:/etc/nginx/nginx.conf
     ports:
-      - "80:80"
+      - "${FRONTEND_PORT}:80"
 
   prometheus:
     image: prom/prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_PORT}:9090"
 
   grafana:
     image: grafana/grafana
     ports:
-      - "3001:3000"
+      - "${GRAFANA_PORT}:3000"
 
 volumes:
   pgdata:

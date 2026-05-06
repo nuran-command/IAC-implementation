@@ -1,61 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>SRE Dashboard</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .status { font-weight: bold; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRE Dashboard | Microservices Monitor</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>SRE Microservices Status</h1>
-    
-    <ul>
-        <li>Auth Service: <span id="auth-status" class="status">Checking...</span></li>
-        <li>User Service: <span id="user-status" class="status">Checking...</span></li>
-        <li>Product Service: <span id="product-status" class="status">Checking...</span></li>
-        <li>Chat Service: <span id="chat-status" class="status">Checking...</span></li>
-        <li>Order Service: <span id="order-status" class="status">Checking...</span></li>
-    </ul>
+    <div class="container">
+        <header>
+            <h1>SRE System Dashboard</h1>
+            <p class="subtitle">Real-time microservices monitoring and interaction</p>
+        </header>
 
-    <h2>Order Actions</h2>
-    <button onclick="placeOrder()">Place Order</button>
-    <p id="order-msg"></p>
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-title">
+                    Auth Service
+                    <span id="auth-status" class="status-badge checking">Checking</span>
+                </div>
+                <p class="subtitle">Authentication & Authorization</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    User Service
+                    <span id="user-status" class="status-badge checking">Checking</span>
+                </div>
+                <p class="subtitle">User Profile Management</p>
+            </div>
 
-    <script>
-        async function checkStatus() {
-            const services = ['auth', 'user', 'products', 'chat', 'orders'];
-            for (const s of services) {
-                const id = s === 'products' ? 'product' : (s === 'orders' ? 'order' : s);
-                const element = document.getElementById(`${id}-status`);
-                try {
-                    const res = await fetch(`/api/${s}/`);
-                    const data = await res.json();
-                    element.innerText = data.status || 'online';
-                } catch (e) {
-                    element.innerText = 'offline';
-                }
-            }
-        }
+            <div class="card">
+                <div class="card-title">
+                    Product Service
+                    <span id="product-status" class="status-badge checking">Checking</span>
+                </div>
+                <p class="subtitle">Inventory & Catalog</p>
+            </div>
 
-        async function placeOrder() {
-            const msg = document.getElementById('order-msg');
-            try {
-                const res = await fetch('/api/orders/');
-                const data = await res.json();
-                if (data.status === 'offline') {
-                    msg.innerText = "Order Failed: " + data.error;
-                } else {
-                    msg.innerText = "Order Placed Successfully!";
-                }
-            } catch (e) {
-                msg.innerText = "Order Failed: Service unreachable";
-            }
-            checkStatus();
-        }
+            <div class="card">
+                <div class="card-title">
+                    Chat Service
+                    <span id="chat-status" class="status-badge checking">Checking</span>
+                </div>
+                <p class="subtitle">Real-time Communication</p>
+            </div>
 
-        checkStatus();
-        setInterval(checkStatus, 5000);
-    </script>
+            <div class="card">
+                <div class="card-title">
+                    Order Service
+                    <span id="order-status" class="status-badge checking">Checking</span>
+                </div>
+                <p class="subtitle">Transaction Processing</p>
+            </div>
+        </div>
+
+        <div class="actions-panel">
+            <h2>System Actions</h2>
+            <p class="subtitle" style="margin-bottom: 20px;">Test the load balanced order service</p>
+            <button onclick="placeOrder()">Simulate Order Placement</button>
+            <p id="order-msg"></p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
