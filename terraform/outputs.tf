@@ -9,16 +9,16 @@ output "ssh_command" {
 }
 
 output "frontend_url" {
-  value       = "http://${aws_instance.sre_server.public_ip}:80"
-  description = "Frontend application URL (Port 80)"
+  value       = "http://${aws_instance.sre_server.public_ip}:${var.http_port}"
+  description = "Frontend application URL"
 }
 
 output "grafana_url" {
-  value       = "http://${aws_instance.sre_server.public_ip}:3000"
-  description = "Grafana dashboard URL (Port 3000)"
+  value       = "http://${aws_instance.sre_server.public_ip}:${var.grafana_port}"
+  description = "Grafana dashboard URL"
 }
 
 output "prometheus_url" {
-  value       = "http://${aws_instance.sre_server.public_ip}:9090"
-  description = "Prometheus UI URL (Port 9090)"
+  value       = "http://${aws_instance.sre_server.public_ip}:${var.prometheus_port}"
+  description = "Prometheus UI URL"
 }
