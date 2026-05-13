@@ -5,7 +5,7 @@ app = FastAPI()
 
 @app.get("/")
 def root():
-    return {"service": "User", "status": "online"}
+    return {"service": "Notification", "status": "online"}
 
 @app.get("/health")
 def health():
@@ -13,4 +13,4 @@ def health():
 
 @app.get("/metrics", response_class=PlainTextResponse)
 def metrics():
-    return "# HELP user_service_status Status of user service\n# TYPE user_service_status gauge\nuser_service_status 1\n"
+    return "# HELP notification_service_status Status of notification service\n# TYPE notification_service_status gauge\nnotification_service_status 1\n"

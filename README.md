@@ -1,57 +1,76 @@
-# Infrastructure as Code & SRE Automation Stack
+# End-to-End Implementation of Site Reliability Engineering Practices
 
-This repository contains the full implementation for **Assignments 4, 5, and 6**. It demonstrates the evolution from a microservices system with basic monitoring to a highly automated, resilient, and scalable architecture following SRE principles.
+## Abstract
+This project presents a comprehensive implementation of Site Reliability Engineering (SRE) principles applied to a distributed microservices-based system. The system integrates containerization, multi-platform orchestration (Docker Swarm and Kubernetes), monitoring, infrastructure provisioning (Terraform), configuration management (Ansible), incident response, and capacity planning.
 
----
+## System Overview
+The architecture consists of 6 independent microservices:
+1. **Auth Service** — user login and security
+2. **Product Service** — product catalog management
+3. **Order Service** — order processing
+4. **Payment Service** — payment handling simulation
+5. **Notification Service** — email/alert simulation
+6. **User Profile Service** — user data management
 
-## **Assignment 6: Automation & Capacity Planning**
+### Supporting Components
+- **Frontend**: Nginx-based web interface and reverse proxy.
+- **Database**: PostgreSQL
+- **Monitoring**: Prometheus + Grafana
 
-This phase focuses on reducing operational toil and preparing the system for high load.
-
-### **1. Automation Mechanisms**
-- **Self-Healing Infrastructure**: Every service now includes Docker health checks and `unless-stopped` restart policies.
-- **Monitoring-Based Alerting**: Prometheus is configured with rules to alert on service downtime, high CPU usage, and application-level errors.
-- **Automated Configuration Validation**: A `validate_config.py` script ensures that environment variables are correctly set before deployment, preventing the misconfiguration incident seen in Assignment 4.
-
-### **2. Capacity Planning & Scaling**
-- **Load Simulation**: A `simulate_load.py` script enables stress-testing the system by generating concurrent API requests.
-- **Horizontal Scaling**: The `order-service` is now load-balanced across multiple instances via Nginx `upstream` configuration.
-- **Vertical Scaling**: Terraform infrastructure is parameterized to allow seamless upgrades of instance types (e.g., from `t3.micro` to `t3.small`).
-
----
-
-## **Deployment & Automation Workflow**
-
-### **1. Validation**
-Before deploying, validate the environment configuration:
-```bash
-python3 validate_config.py
+## Project Structure
+```text
+├── ansible/               # Ansible configuration management playbooks
+├── docs/                  # SRE documentation (Postmortem, Capacity Planning)
+├── frontend/              # Nginx frontend application
+├── kubernetes/            # Kubernetes deployment manifests
+├── monitoring/            # Prometheus configuration and alert rules
+├── scripts/               # Validation and load simulation scripts
+├── services/              # Microservice source code (FastAPI)
+│   ├── auth-service/
+│   ├── notification-service/
+│   ├── order-service/
+│   ├── payment-service/
+│   ├── product-service/
+│   └── user-profile-service/
+├── terraform/             # Terraform infrastructure provisioning
+├── docker-compose.yml     # Docker Swarm orchestration
+└── nginx.conf             # API Gateway configuration
 ```
 
-### **2. Infrastructure Provisioning (Terraform)**
+## Setup & Deployment
+
+### 1. Infrastructure Provisioning (Terraform)
+Provision AWS infrastructure using Terraform:
 ```bash
+cd terraform
 terraform init
-terraform apply -var="instance_type=t3.small" # Example of vertical scaling
+terraform apply
 ```
 
-### **3. Service Deployment (Docker Compose)**
+### 2. Configuration Management (Ansible)
+Run Ansible to install Docker/Kubernetes and deploy the stack:
 ```bash
-docker-compose up -d --build
+cd ansible
+ansible-playbook -i inventory playbook.yml
 ```
 
-### **4. Load Testing**
+### 3. Orchestration 
+
+#### Option A: Docker Swarm
 ```bash
-python3 simulate_load.py
+docker swarm init
+docker stack deploy -c docker-compose.yml sre_app
 ```
 
----
+#### Option B: Kubernetes
+```bash
+kubectl apply -f kubernetes/app-deployment.yaml
+```
 
-## **SRE Monitoring Stack**
-
-| Service | Role | Port |
-| :--- | :--- | :--- |
-| **Frontend** | Nginx-based static web interface. | `8080` |
-| **Auth Service** | FastAPI Authentication handler. | `80` |
-| **Order Service** | FastAPI (Load Balanced x2) | `80` |
-| **Prometheus** | Time-series DB with alerting rules. | `9090` |
-| **Grafana** | Real-time observability dashboards. | `3002` |
+## SRE Practices Implemented
+- **Multi-Orchestration**: Kubernetes and Docker Swarm are used to demonstrate declarative vs basic clustering strategies.
+- **Infrastructure as Code**: Cloud environments are bootstrapped cleanly and repeatably with Terraform.
+- **Configuration Management**: Ansible automates software dependencies and application rollouts.
+- **Observability**: Prometheus collects `/metrics` from all 6 services. Grafana visualizes the uptime, request rates, and resource utilization.
+- **Incident Response**: `docs/INCIDENT_POSTMORTEM.md` covers a simulated root-cause analysis of an `order-service` database configuration failure.
+- **Capacity Planning**: `docs/CAPACITY_PLANNING.md` defines scaling strategies (horizontal/vertical) to address load constraints in the database and intensive API endpoints.

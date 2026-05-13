@@ -20,11 +20,11 @@ services:
       timeout: 10s
       retries: 3
 
-  user-service:
+  user-profile-service:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
     restart: unless-stopped
     volumes:
-      - ./services/user-service:/app
+      - ./services/user-profile-service:/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
@@ -42,11 +42,22 @@ services:
       timeout: 10s
       retries: 3
 
-  chat-service:
+  payment-service:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
     restart: unless-stopped
     volumes:
-      - ./services/chat-service:/app
+      - ./services/payment-service:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  notification-service:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    restart: unless-stopped
+    volumes:
+      - ./services/notification-service:/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
