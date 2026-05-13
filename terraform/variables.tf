@@ -9,9 +9,11 @@ variable "environment" {
 }
 
 variable "instance_type" {
-  default     = "t3.medium"
-  description = "EC2 instance type for vertical scaling"
+  default     = "t3.micro"
+  description = "EC2 instance type (Free Tier eligible in modern regions)"
 }
+
+
 
 variable "node_count" {
   default     = 1
