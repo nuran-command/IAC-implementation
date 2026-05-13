@@ -54,11 +54,17 @@
         dest: /usr/local/bin/docker-compose
         mode: '0755'
 
+    - name: Remove existing project directory (to ensure fresh clone)
+      file:
+        path: "{{ project_dir }}"
+        state: absent
+
     - name: Ensure project directory exists
       file:
         path: "{{ project_dir }}"
         state: directory
         mode: '0755'
+
 
     - name: Clone project repository
       git:
