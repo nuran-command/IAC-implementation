@@ -16,8 +16,12 @@
           - python3-pip
           - virtualenv
           - python3-setuptools
+          - python3-docker
+          - git
         state: present
         update_cache: yes
+
+
 
     - name: Add Docker GPG apt Key
       apt_key:
@@ -50,9 +54,15 @@
         dest: /usr/local/bin/docker-compose
         mode: '0755'
 
+    - name: Ensure project directory exists
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        mode: '0755'
+
     - name: Clone project repository
       git:
-        repo: 'https://github.com/yourusername/endterm-sre.git'
+        repo: 'https://github.com/nuran-command/IAC-implementation.git'
         dest: "{{ project_dir }}"
         version: main
         force: yes
@@ -63,6 +73,7 @@
       ignore_errors: yes
 
     - name: Deploy Docker Stack
-      command: docker stack deploy -c {{ project_dir }}/docker-compose.yml sre_app
+      command: docker stack deploy -c {{ project_dir }}/docker-swarm.yml sre_app
       args:
         chdir: "{{ project_dir }}"
+
