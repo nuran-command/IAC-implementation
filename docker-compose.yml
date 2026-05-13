@@ -9,6 +9,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+
   auth-service:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
     restart: unless-stopped

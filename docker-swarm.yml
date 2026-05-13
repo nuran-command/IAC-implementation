@@ -1,0 +1,256 @@
+# ============================================================
+# Docker Swarm Stack Configuration
+# Deploy with: docker stack deploy -c docker-swarm.yml sre_app
+# Init Swarm:  docker swarm init
+# ============================================================
+version: '3.8'
+
+services:
+  # ── Infrastructure ──────────────────────────────────────────
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_USER: postgres
+      POSTGRES_DB: sre_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - sre-net
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - sre-net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  # ── Application Microservices ────────────────────────────────
+  auth-service:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    volumes:
+      - ./services/auth-service:/app
+    networks:
+      - sre-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+
+  user-profile-service:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    volumes:
+      - ./services/user-profile-service:/app
+    networks:
+      - sre-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+
+  product-service:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    volumes:
+      - ./services/product-service:/app
+    networks:
+      - sre-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+
+  order-service:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    volumes:
+      - ./services/order-service:/app
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_NAME=sre_db
+    networks:
+      - sre-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 3                # Higher replicas — most critical service
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 256M
+
+  payment-service:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    volumes:
+      - ./services/payment-service:/app
+    networks:
+      - sre-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  notification-service:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    volumes:
+      - ./services/notification-service:/app
+    networks:
+      - sre-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+
+  # ── Frontend ─────────────────────────────────────────────────
+  frontend:
+    image: nginx:latest
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    networks:
+      - sre-net
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  # ── Monitoring ───────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - sre-net
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - sre-net
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+
+networks:
+  sre-net:
+    driver: overlay
+    attachable: true
+
+volumes:
+  pgdata:
+  grafana_data:

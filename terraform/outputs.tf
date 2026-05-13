@@ -1,24 +1,34 @@
-output "public_ip" {
-  value       = aws_instance.sre_server.public_ip
-  description = "The public IP of the SRE server"
+output "public_ips" {
+  value       = aws_instance.sre_server[*].public_ip
+  description = "The public IPs of all SRE server nodes"
 }
 
-output "ssh_command" {
-  value       = "ssh -i my-project-key.pem ubuntu@${aws_instance.sre_server.public_ip}"
-  description = "Command to SSH into the EC2 instance (Port 22)"
+output "ssh_commands" {
+  value       = [for ip in aws_instance.sre_server[*].public_ip : "ssh -i ${var.key_name}.pem ubuntu@${ip}"]
+  description = "Commands to SSH into the EC2 instances"
+}
+
+output "manager_node_ip" {
+  value       = aws_instance.sre_server[0].public_ip
+  description = "The public IP of the primary Manager node"
 }
 
 output "frontend_url" {
-  value       = "http://${aws_instance.sre_server.public_ip}:${var.http_port}"
-  description = "Frontend application URL"
+  value       = "http://${aws_instance.sre_server[0].public_ip}:${var.http_port}"
+  description = "Frontend application URL (Standard)"
+}
+
+output "frontend_url_k8s" {
+  value       = "http://${aws_instance.sre_server[0].public_ip}:30080"
+  description = "Frontend application URL (Kubernetes NodePort)"
 }
 
 output "grafana_url" {
-  value       = "http://${aws_instance.sre_server.public_ip}:${var.grafana_port}"
-  description = "Grafana dashboard URL"
+  value       = "http://${aws_instance.sre_server[0].public_ip}:30300"
+  description = "Grafana dashboard URL (Kubernetes NodePort)"
 }
 
 output "prometheus_url" {
-  value       = "http://${aws_instance.sre_server.public_ip}:${var.prometheus_port}"
-  description = "Prometheus UI URL"
+  value       = "http://${aws_instance.sre_server[0].public_ip}:30090"
+  description = "Prometheus UI URL (Kubernetes NodePort)"
 }

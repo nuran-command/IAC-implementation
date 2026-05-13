@@ -11,61 +11,83 @@ provider "aws" {
   region = var.region
 }
 
+locals {
+  # Hide port logic inside locals for a cleaner main.tf
+  ingress_rules = [
+    { port = var.ssh_port,        desc = "SSH" },
+    { port = var.http_port,       desc = "Standard HTTP" },
+    { port = var.grafana_port,    desc = "Grafana" },
+    { port = var.prometheus_port, desc = "Prometheus" },
+    { port = var.redis_port,      desc = "Redis (Internal/Debug)" }
+  ]
+}
+
+
 # 1. Create a Security Group
 resource "aws_security_group" "sre_sg" {
-  name        = "sre-project-sg"
-  description = "Allow inbound traffic for SRE project"
+  name        = "sre-project-sg-${var.environment}"
+  description = "Allow inbound traffic for SRE project microservices"
 
-  # SSH
+  # Dynamic ingress for standard ports
+  dynamic "ingress" {
+    for_each = local.ingress_rules
+    content {
+      description = ingress.value.desc
+      from_port   = ingress.value.port
+      to_port     = ingress.value.port
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
+  # Kubernetes NodePort Range (Abstracted from main logic)
   ingress {
-    from_port   = var.ssh_port
-    to_port     = var.ssh_port
+    description = "Kubernetes NodePorts"
+    from_port   = var.k8s_nodeport_min
+    to_port     = var.k8s_nodeport_max
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # HTTP
+  # Docker Swarm Cluster Communication (Internal/Self)
   ingress {
-    from_port   = var.http_port
-    to_port     = var.http_port
+    description = "Swarm Internal"
+    from_port   = var.swarm_port
+    to_port     = var.swarm_port
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    self        = true
   }
 
-  # Grafana
-  ingress {
-    from_port   = var.grafana_port
-    to_port     = var.grafana_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Prometheus
-  ingress {
-    from_port   = var.prometheus_port
-    to_port     = var.prometheus_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Allow all outbound (so the server can download Docker)
+  # Allow all outbound
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name        = "sre-security-group"
+    Environment = var.environment
+    Project     = "EndTerm-SRE"
+  }
 }
 
-# 2. Create the EC2 Instance
+
+# 2. Create EC2 Instances
 resource "aws_instance" "sre_server" {
+  count         = var.node_count
   ami           = "ami-0c7217cdde317cfec" # Ubuntu 22.04 LTS in us-east-1
-  instance_type = var.instance_type             # Can be upgraded for vertical scaling
-  key_name      = "my-project-key"       # Must match the key you created earlier!
+  instance_type = var.instance_type
+  key_name      = var.key_name
 
   vpc_security_group_ids = [aws_security_group.sre_sg.id]
 
   tags = {
-    Name = "SRE-Microservices-Host"
+    Name        = "SRE-Node-${count.index + 1}"
+    Environment = var.environment
+    Project     = "EndTerm-SRE"
+    Role        = count.index == 0 ? "Manager" : "Worker"
   }
 }
+

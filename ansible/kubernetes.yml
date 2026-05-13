@@ -1,0 +1,59 @@
+---
+# ============================================================
+# Ansible Playbook: Kubernetes Setup
+# Installs kubectl and deploys all k8s manifests
+# Usage: ansible-playbook -i inventory.ini kubernetes.yml
+# ============================================================
+- name: Install kubectl and Deploy Kubernetes Manifests
+  hosts: swarm_manager
+  become: yes
+  vars:
+    project_dir: "/opt/endterm-sre"
+    k8s_manifests_dir: "{{ project_dir }}/kubernetes"
+
+  tasks:
+    - name: Install kubectl
+      shell: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      args:
+        creates: /usr/local/bin/kubectl
+
+    - name: Copy Kubernetes manifests to server
+      copy:
+        src: ../kubernetes/
+        dest: "{{ k8s_manifests_dir }}/"
+        mode: '0644'
+
+    - name: Apply Kubernetes namespace
+      command: kubectl apply -f {{ k8s_manifests_dir }}/namespace.yaml
+
+    - name: Apply Kubernetes ConfigMap and Secret
+      command: kubectl apply -f {{ k8s_manifests_dir }}/configmap.yaml -f {{ k8s_manifests_dir }}/secret.yaml
+
+    - name: Apply Database StatefulSet
+      command: kubectl apply -f {{ k8s_manifests_dir }}/database.yaml
+
+    - name: Apply all microservice Deployments
+      command: |
+        kubectl apply \
+          -f {{ k8s_manifests_dir }}/auth-service.yaml \
+          -f {{ k8s_manifests_dir }}/product-service.yaml \
+          -f {{ k8s_manifests_dir }}/order-service.yaml \
+          -f {{ k8s_manifests_dir }}/payment-service.yaml \
+          -f {{ k8s_manifests_dir }}/notification-service.yaml \
+          -f {{ k8s_manifests_dir }}/user-profile-service.yaml
+
+    - name: Apply Frontend Deployment
+      command: kubectl apply -f {{ k8s_manifests_dir }}/frontend.yaml
+
+    - name: Apply Monitoring Stack
+      command: kubectl apply -f {{ k8s_manifests_dir }}/monitoring.yaml
+
+    - name: Check pod status
+      command: kubectl get pods -n sre-app
+      register: pods_status
+
+    - name: Print pod status
+      debug:
+        var: pods_status.stdout_lines

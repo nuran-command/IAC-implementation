@@ -1,12 +1,24 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: app-config
-data:
-  DB_HOST: "db-service"
-  DB_PORT: "5432"
-  DB_USER: "postgres"
-  DB_NAME: "sre_db"
+# ============================================================
+# DEPRECATED — This file has been split into per-microservice files.
+#
+# Apply manifests individually in this order:
+#   1. namespace.yaml          — Kubernetes namespace
+#   2. configmap.yaml          — Shared ConfigMap
+#   3. secret.yaml             — Database credentials
+#   4. database.yaml           — PostgreSQL StatefulSet
+#   5. redis.yaml              — Redis Message Broker
+#   6. auth-service.yaml       — Auth Service Deployment + Service
+
+#   6. product-service.yaml    — Product Service Deployment + Service
+#   7. order-service.yaml      — Order Service Deployment + Service + HPA
+#   8. payment-service.yaml    — Payment Service Deployment + Service + HPA
+#   9. notification-service.yaml — Notification Service
+#  10. user-profile-service.yaml  — User Profile Service
+#  11. frontend.yaml           — Nginx Frontend (NodePort 30080)
+#  12. monitoring.yaml         — Prometheus + Grafana + RBAC
+#
+# Or run:  bash scripts/deploy.sh kubernetes
+# ============================================================
 ---
 apiVersion: apps/v1
 kind: Deployment

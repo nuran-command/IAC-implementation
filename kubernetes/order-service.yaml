@@ -1,0 +1,97 @@
+# ============================================================
+# Order Service — Kubernetes Deployment + Service + HPA
+# NOTE: This service experienced the simulated incident
+#       (wrong DB_HOST → crash loop). See docs/INCIDENT_POSTMORTEM.md
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: sre-app
+  labels:
+    app: order-service
+    tier: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: order-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: order-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "80"
+    spec:
+      containers:
+      - name: order-service
+        image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+        ports:
+        - containerPort: 80
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secret
+        resources:
+          requests:
+            cpu: "150m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: sre-app
+spec:
+  selector:
+    app: order-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+# Horizontal Pod Autoscaler — scales order-service based on CPU
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: order-service-hpa
+  namespace: sre-app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: order-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70

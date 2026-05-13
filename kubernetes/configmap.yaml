@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: sre-app
+data:
+  DB_HOST: "db-service"
+  DB_PORT: "5432"
+  DB_USER: "postgres"
+  DB_NAME: "sre_db"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"

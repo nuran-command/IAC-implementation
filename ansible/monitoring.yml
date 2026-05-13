@@ -1,0 +1,75 @@
+---
+# ============================================================
+# Ansible Playbook: Monitoring Setup
+# Sets up Prometheus + Grafana on the manager node
+# Usage: ansible-playbook -i inventory.ini monitoring.yml
+# ============================================================
+- name: Configure Monitoring Stack (Prometheus + Grafana)
+  hosts: swarm_manager
+  become: yes
+  vars:
+    project_dir: "/opt/endterm-sre"
+    monitoring_dir: "{{ project_dir }}/monitoring"
+
+  tasks:
+    - name: Ensure monitoring directory exists
+      file:
+        path: "{{ monitoring_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy Prometheus configuration
+      copy:
+        src: ../monitoring/prometheus.yml
+        dest: "{{ monitoring_dir }}/prometheus.yml"
+        mode: '0644'
+
+    - name: Copy Prometheus alert rules
+      copy:
+        src: ../monitoring/alert_rules.yml
+        dest: "{{ monitoring_dir }}/alert_rules.yml"
+        mode: '0644'
+
+    - name: Run Prometheus container
+      docker_container:
+        name: prometheus
+        image: prom/prometheus:v2.48.0
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "9090:9090"
+        volumes:
+          - "{{ monitoring_dir }}/prometheus.yml:/etc/prometheus/prometheus.yml"
+          - "{{ monitoring_dir }}/alert_rules.yml:/etc/prometheus/alert_rules.yml"
+        networks:
+          - name: sre-net
+
+    - name: Run Grafana container
+      docker_container:
+        name: grafana
+        image: grafana/grafana:10.2.0
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "3000:3000"
+        env:
+          GF_SECURITY_ADMIN_PASSWORD: "admin"
+        volumes:
+          - grafana_data:/var/lib/grafana
+        networks:
+          - name: sre-net
+
+    - name: Wait for Grafana to be ready
+      uri:
+        url: "http://localhost:3000/api/health"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 12
+      delay: 5
+
+    - name: Print monitoring URLs
+      debug:
+        msg:
+          - "Prometheus: http://{{ ansible_host }}:9090"
+          - "Grafana:    http://{{ ansible_host }}:3000 (admin/admin)"
