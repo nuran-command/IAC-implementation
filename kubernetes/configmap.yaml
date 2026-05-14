@@ -10,3 +10,4 @@ data:
   DB_NAME: "sre_db"
   REDIS_HOST: "redis-service"
   REDIS_PORT: "6379"
+  WEB_CONCURRENCY: "1"

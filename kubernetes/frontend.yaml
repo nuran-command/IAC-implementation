@@ -24,6 +24,12 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
+        volumeMounts:
+        - name: html-volume
+          mountPath: /usr/share/nginx/html
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
         resources:
           requests:
             cpu: "50m"
@@ -31,18 +37,13 @@ spec:
           limits:
             cpu: "200m"
             memory: "128Mi"
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 15
+      volumes:
+      - name: html-volume
+        configMap:
+          name: frontend-content
+      - name: nginx-config
+        configMap:
+          name: frontend-content
 ---
 apiVersion: v1
 kind: Service
