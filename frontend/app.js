@@ -152,7 +152,9 @@ async function loadBoardTasks() {
     // Update Counts & Total Points
     document.getElementById('val-total-points').innerText = totalPoints;
     for (const [col, count] of Object.entries(counts)) {
-        document.getElementById(`count-${col}`).innerText = count;
+        const elementId = `count-${col.replace('_', '-')}`;
+        const el = document.getElementById(elementId);
+        if (el) el.innerText = count;
     }
 
     // Dynamic Sprint Velocity Cost computation via Payment Service
