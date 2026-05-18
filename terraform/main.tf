@@ -14,11 +14,11 @@ provider "aws" {
 locals {
   # Hide port logic inside locals for a cleaner main.tf
   ingress_rules = [
-    { port = var.ssh_port,        desc = "SSH" },
-    { port = var.http_port,       desc = "Standard HTTP" },
-    { port = var.grafana_port,    desc = "Grafana" },
+    { port = var.ssh_port, desc = "SSH" },
+    { port = var.http_port, desc = "Standard HTTP" },
+    { port = var.grafana_port, desc = "Grafana" },
     { port = var.prometheus_port, desc = "Prometheus" },
-    { port = var.redis_port,      desc = "Redis (Internal/Debug)" }
+    { port = var.redis_port, desc = "Redis (Internal/Debug)" }
   ]
 }
 
