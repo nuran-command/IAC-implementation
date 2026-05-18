@@ -3,66 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRE Dashboard | Microservices Monitor</title>
+    <title>SRE Enterprise Kanban | Cyberpunk Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Ambient Radial Background Glows -->
+    <div class="radial-glow-1"></div>
+    <div class="radial-glow-2"></div>
+
+    <div class="app-container">
+        <!-- ── HEADER SECTION ─────────────────────────────────────────────────── -->
         <header>
-            <h1>SRE System Dashboard</h1>
-            <p class="subtitle">Real-time microservices monitoring and interaction</p>
+            <div class="brand">
+                <span class="neon-dot"></span>
+                <h1>SRE KANBAN CONTROL CONSOLE</h1>
+            </div>
+            <p class="tagline">Real-time Multi-Service Orchestrated Board & Cluster Monitor</p>
+            
+            <!-- Live Service Monitors Top-Bar -->
+            <div class="cluster-status-bar">
+                <div class="status-node" id="node-auth">
+                    <span class="status-indicator yellow" id="badge-auth"></span>
+                    <span class="node-label">AUTH-SVC</span>
+                </div>
+                <div class="status-node" id="node-user">
+                    <span class="status-indicator yellow" id="badge-user"></span>
+                    <span class="node-label">USER-SVC</span>
+                </div>
+                <div class="status-node" id="node-product">
+                    <span class="status-indicator yellow" id="badge-product"></span>
+                    <span class="node-label">PROD-SVC</span>
+                </div>
+                <div class="status-node" id="node-order">
+                    <span class="status-indicator yellow" id="badge-order"></span>
+                    <span class="node-label">ORDER-SVC</span>
+                </div>
+                <div class="status-node" id="node-payment">
+                    <span class="status-indicator yellow" id="badge-payment"></span>
+                    <span class="node-label">PAY-SVC</span>
+                </div>
+                <div class="status-node" id="node-notification">
+                    <span class="status-indicator yellow" id="badge-notification"></span>
+                    <span class="node-label">NOTIF-SVC</span>
+                </div>
+            </div>
         </header>
 
-        <div class="dashboard">
-            <div class="card">
-                <div class="card-title">
-                    Auth Service
-                    <span id="auth-status" class="status-badge checking">Checking</span>
+        <!-- ── UPPER CONSOLE: STATS & BUDGET ────────────────────────────── -->
+        <section class="upper-console">
+            <div class="sprint-stats-card">
+                <div class="stat-box">
+                    <span class="stat-value" id="val-total-points">0</span>
+                    <span class="stat-label">TOTAL STORY POINTS</span>
                 </div>
-                <p class="subtitle">Authentication & Authorization</p>
+                <div class="stat-box">
+                    <span class="stat-value neon-green" id="val-sprint-cost">$0</span>
+                    <span class="stat-label">SRE VELOCITY COST</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value" id="val-active-devs">0</span>
+                    <span class="stat-label">ON-CALL ASSIGNEES</span>
+                </div>
             </div>
-            
-            <div class="card">
-                <div class="card-title">
-                    User Service
-                    <span id="user-status" class="status-badge checking">Checking</span>
+        </section>
+
+        <!-- ── MAIN KANBAN BOARD Grid ────────────────────────────────────────── -->
+        <main class="kanban-grid">
+            <!-- Column 1: Backlog -->
+            <div class="kanban-column" id="col-backlog">
+                <div class="column-header">
+                    <h2>BACKLOG</h2>
+                    <span class="count-badge" id="count-backlog">0</span>
                 </div>
-                <p class="subtitle">User Profile Management</p>
+                <div class="cards-container" id="container-backlog"></div>
             </div>
 
-            <div class="card">
-                <div class="card-title">
-                    Product Service
-                    <span id="product-status" class="status-badge checking">Checking</span>
+            <!-- Column 2: To Do -->
+            <div class="kanban-column" id="col-todo">
+                <div class="column-header">
+                    <h2>TO DO</h2>
+                    <span class="count-badge" id="count-todo">0</span>
                 </div>
-                <p class="subtitle">Inventory & Catalog</p>
+                <div class="cards-container" id="container-todo"></div>
             </div>
 
-            <div class="card">
-                <div class="card-title">
-                    Chat Service
-                    <span id="chat-status" class="status-badge checking">Checking</span>
+            <!-- Column 3: In Progress -->
+            <div class="kanban-column" id="col-in-progress">
+                <div class="column-header">
+                    <h2>IN PROGRESS</h2>
+                    <span class="count-badge" id="count-in-progress">0</span>
                 </div>
-                <p class="subtitle">Real-time Communication</p>
+                <div class="cards-container" id="container-in-progress"></div>
             </div>
 
-            <div class="card">
-                <div class="card-title">
-                    Order Service
-                    <span id="order-status" class="status-badge checking">Checking</span>
+            <!-- Column 4: Done -->
+            <div class="kanban-column" id="col-done">
+                <div class="column-header">
+                    <h2>DONE</h2>
+                    <span class="count-badge" id="count-done">0</span>
                 </div>
-                <p class="subtitle">Transaction Processing</p>
+                <div class="cards-container" id="container-done"></div>
             </div>
-        </div>
+        </main>
 
-        <div class="actions-panel">
-            <h2>System Actions</h2>
-            <p class="subtitle" style="margin-bottom: 20px;">Test the load balanced order service</p>
-            <button onclick="placeOrder()">Simulate Order Placement</button>
-            <p id="order-msg"></p>
+        <!-- ── LOWER CONSOLE: TERMINAL LOGS & ACTIONS ──────────────────────── -->
+        <footer class="lower-console">
+            <!-- SRE Hacker Terminal Logs -->
+            <div class="terminal-logs-panel">
+                <div class="terminal-header">
+                    <div class="term-dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <span class="term-title">SRE LIVE ACTIVITY SHIELD MONITOR</span>
+                </div>
+                <div class="terminal-body" id="terminal-stream">
+                    <!-- Logs dynamically appended here -->
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ── CARD MOVE MODAL CONSOLE ──────────────────────────────────────── -->
+    <div class="modal-overlay" id="move-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>ORCHESTRATE TASK STATE</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc" id="modal-task-title">Task Description</p>
+                
+                <div class="form-group">
+                    <label for="select-assignee">Assign On-Call Engineer</label>
+                    <select id="select-assignee">
+                        <!-- Options dynamically loaded -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="select-column">Target Orchestration Column</label>
+                    <select id="select-column">
+                        <option value="backlog">Backlog</option>
+                        <option value="todo">To Do</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="done">Done</option>
+                    </select>
+                </div>
+                
+                <button class="action-submit-btn" id="btn-submit-move">Apply Change State</button>
+            </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=1.0.2"></script>
 </body>
 </html>

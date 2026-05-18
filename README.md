@@ -179,11 +179,23 @@ terraform apply
 
 ---
 
-## 8. Health Checks
+## 8. Health Checks & Automation Scripts
 
 ```bash
+# Verify the health of all 6 microservices
 bash scripts/health_check.sh
+
+# Run pytest unit tests across all microservices
+pytest services/
 ```
+
+---
+
+## 9. Team Workflow & CI/CD Pipeline (Team Final Upgrade)
+
+This project has been expanded for enterprise team collaboration:
+1. **Team Collaboration**: Detailed roles, branching models, and SRE PR review gates are defined in [`docs/TEAM_WORKFLOW.md`](docs/TEAM_WORKFLOW.md).
+2. **CI/CD Pipeline**: A comprehensive GitHub Actions workflow at [`.github/workflows/cicd.yml`](.github/workflows/cicd.yml) automates linting, validation (Terraform, Ansible, Kubernetes Configs), pytest unit testing, Docker stack compiling, and delivery verification.
 
 ---
 
@@ -195,4 +207,5 @@ bash scripts/health_check.sh
 - [x] **Midterm**     — Functional microservices deployment
 - [x] **Assignment 4** — Incident simulation, postmortem (`docs/INCIDENT_POSTMORTEM.md`)
 - [x] **Assignment 5** — Terraform IaC + Ansible configuration management
-- [x] **Assignment 6** — Automation scripts, health checks, Docker Swarm, Kubernetes (per-service manifests), capacity planning
+- [x] **Assignment 6** — Automation scripts (`scripts/deploy.sh`, `scripts/health_check.sh`, `scripts/incident_simulate.sh`), Docker Swarm, Kubernetes manifests, capacity planning (`docs/CAPACITY_PLANNING.md`)
+- [x] **Final Upgrade** — Team Collaboration Guide (`docs/TEAM_WORKFLOW.md`) & Automated CI/CD Pipeline (`.github/workflows/cicd.yml`) with pytest unit test suites.

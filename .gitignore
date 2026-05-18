@@ -1,38 +1,86 @@
-# Secrets and Keys
+# ==============================================================================
+# SRE ENTERPRISE PROJECT - GITIGNORE CONFIGURATION
+# ==============================================================================
+
+# ── ENVIRONMENT VARIABLES & SECRETS ───────────────────────────────────────────
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
 *.pem
 *.key
 *.pub
+*.cert
+*.crt
+id_rsa
+inventory.ini
 
-# Terraform state and sensitive files
-*.tfstate
-*.tfstate.*
+# ── TERRAFORM & IAC ───────────────────────────────────────────────────────────
 .terraform/
 .terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+*.tfstate.d
 *.tfvars
 *.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
 
-# Python
+# ── ANSIBLE ───────────────────────────────────────────────────────────────────
+*.retry
+.ansible/
+galaxy.yml
+collections/
+roles/
+
+# ── DOCKER ────────────────────────────────────────────────────────────────────
+.docker/
+docker-compose.override.yml
+pgdata/
+postgres-data/
+db-data/
+redis-data/
+
+# ── PYTHON, TESTS & VIRTUAL ENVIRONMENTS ──────────────────────────────────────
 venv/
 .venv/
 env/
 .env/
+.test-venv/
+ENV/
+bin/
+lib/
+include/
+pip-selfcheck.json
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 .pytest_cache/
 .coverage
 htmlcov/
+.tox/
+.nox/
+.egg-info/
+dist/
+build/
+eggs/
+*.egg
 
-# Logs and OS files
-*.log
-.DS_Store*.pem
-*.tfstate*
-.terraform/
-
+# ── OPERATING SYSTEM CACHE & LOGS ─────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-
-# Docker
-.docker/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
