@@ -105,7 +105,7 @@ resource "aws_instance" "sre_server" {
 }
 
 resource "aws_eip" "sre_eip" {
-  instance = aws_instance.sre_server.id
+  instance = aws_instance.sre_server[0].id
   domain   = "vpc"
 
   tags = {
