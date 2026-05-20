@@ -1,6 +1,5 @@
-output "public_ips" {
-  value       = aws_instance.sre_server[*].public_ip
-  description = "The public IPs of all SRE server nodes"
+output "public_ip" {
+  value = aws_eip.sre_eip.public_ip
 }
 
 output "ssh_commands" {

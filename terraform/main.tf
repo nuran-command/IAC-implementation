@@ -12,13 +12,10 @@ provider "aws" {
 }
 
 locals {
-  # Hide port logic inside locals for a cleaner main.tf
-  ingress_rules = [
+  private_ingress_rules = [
     { port = var.ssh_port, desc = "SSH" },
-    { port = var.http_port, desc = "Standard HTTP" },
     { port = var.grafana_port, desc = "Grafana" },
-    { port = var.prometheus_port, desc = "Prometheus" },
-    { port = var.redis_port, desc = "Redis (Internal/Debug)" }
+    { port = var.prometheus_port, desc = "Prometheus" }
   ]
 }
 
@@ -30,13 +27,13 @@ resource "aws_security_group" "sre_sg" {
 
   # Dynamic ingress for standard ports
   dynamic "ingress" {
-    for_each = local.ingress_rules
+    for_each = local.private_ingress_rules
     content {
       description = ingress.value.desc
       from_port   = ingress.value.port
       to_port     = ingress.value.port
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = [var.my_ip]
     }
   }
 
@@ -57,6 +54,22 @@ resource "aws_security_group" "sre_sg" {
     protocol    = "tcp"
     self        = true
   }
+
+  ingress {
+  description = "HTTP"
+    from_port   = var.http_port
+    to_port     = var.http_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  } 
 
   # Allow all outbound
   egress {
@@ -91,3 +104,11 @@ resource "aws_instance" "sre_server" {
   }
 }
 
+resource "aws_eip" "sre_eip" {
+  instance = aws_instance.sre_server.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "sre-elastic-ip"
+  }
+}

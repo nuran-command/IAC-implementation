@@ -9,7 +9,7 @@ variable "environment" {
 }
 
 variable "instance_type" {
-  default     = "t3.micro"
+  default     = "t3.small"
   description = "EC2 instance type (Free Tier eligible in modern regions)"
 }
 
@@ -37,6 +37,9 @@ variable "http_port" {
   type        = number
 }
 
+
+
+
 variable "grafana_port" {
   default     = 3000
   description = "Grafana dashboard port"
@@ -46,12 +49,6 @@ variable "grafana_port" {
 variable "prometheus_port" {
   default     = 9090
   description = "Prometheus UI port"
-  type        = number
-}
-
-variable "redis_port" {
-  default     = 6379
-  description = "Redis standard port"
   type        = number
 }
 
@@ -73,3 +70,11 @@ variable "k8s_nodeport_max" {
   description = "Maximum port in Kubernetes NodePort range"
   type        = number
 }
+
+
+variable "my_ip" {
+  description = "My public IP for SSH"
+  type        = string
+  default     = "2.76.231.217/32"
+}
+
