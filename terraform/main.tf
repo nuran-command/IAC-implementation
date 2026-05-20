@@ -56,7 +56,7 @@ resource "aws_security_group" "sre_sg" {
   }
 
   ingress {
-  description = "HTTP"
+    description = "HTTP"
     from_port   = var.http_port
     to_port     = var.http_port
     protocol    = "tcp"
@@ -69,7 +69,7 @@ resource "aws_security_group" "sre_sg" {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-  } 
+  }
 
   # Allow all outbound
   egress {
